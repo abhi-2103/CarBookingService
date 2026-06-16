@@ -29,11 +29,11 @@ const Login = () => {
     }
 
     // Mock validation check for demonstration
-    if (credentials.email === "admin@autocare.com" && credentials.password === "password123") {
+    if (credentials.email === "kulkaraniabhilash@gmail.com" && credentials.password === "password123") {
       login({ email: credentials.email, name: 'Premium Client Admin' });
       navigate(from, { replace: true });
     } else {
-      setError('Invalid credentials. Use admin@autocare.com / password123');
+      setError('Invalid credentials. / password123');
     }
   };
 
@@ -42,7 +42,7 @@ const Login = () => {
       <form onSubmit={handleLoginSubmit} className="appointment-form">
         <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>System Authentication</h2>
         <p style={{ fontSize: '0.875rem', color: '#64748b', textAlign: 'center', marginBottom: '1.5rem' }}>
-          Use <strong>admin@autocare.com</strong> & <strong>password123</strong> to test.
+          Use <strong>kulkaraniabhilash@gmail.com</strong> & <strong>password123</strong> to test.
         </p>
 
         {error && <div style={{ background: '#fef2f2', color: '#dc2626', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', border: '1px solid #fca5a5' }}>{error}</div>}
