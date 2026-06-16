@@ -1,37 +1,40 @@
 import React, { useContext } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { BookingContext } from '../context/BookingContext';
 import Home from '../pages/Home';
 import Services from '../pages/Services';
 import Booking from '../pages/Booking';
 import AppointmentForm from '../components/AppointmentForm';
 import Confirmation from '../pages/Confirmation';
+import Login from '../pages/Login';
 
-// Protected Route Guard Design Pattern (Rubric Requirement)
 const RouteGuard = ({ children, ruleType }) => {
   const { bookingState } = useContext(BookingContext);
+  const location = useLocation();
 
-  // Guard 1: Prevent entering details if no car service package is selected
+  // 🔐 Guard Rule 1: Must be authenticated to enter booking workflows
+  if (!bookingState.user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // 🛡️ Guard Rule 2: Validation check for workflow steps
   if (ruleType === 'NEEDS_SERVICE' && !bookingState.selectedService) {
     return <Navigate to="/services" replace />;
   }
-  
-  // Guard 2: Prevent access to final review checkout if form entries are missing
   if (ruleType === 'NEEDS_FORM' && (!bookingState.selectedService || !bookingState.customerDetails)) {
     return <Navigate to="/booking/form" replace />;
   }
-  
+
   return children;
 };
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Basic Root Route Layout */}
       <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/services" element={<Services />} />
       
-      {/* SPA Routing: Nested & Dynamic Protected Flow Structure */}
       <Route 
         path="/booking" 
         element={
@@ -40,9 +43,7 @@ const AppRoutes = () => {
           </RouteGuard>
         }
       >
-        {/* Sub-routing child components managed by <Outlet /> inside Booking.jsx */}
         <Route path="form" element={<AppointmentForm />} />
-        
         <Route 
           path="confirm" 
           element={
@@ -53,7 +54,6 @@ const AppRoutes = () => {
         />
       </Route>
 
-      {/* Wildcard Fallback: Gracefully catch-all misrouted paths and bounce to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

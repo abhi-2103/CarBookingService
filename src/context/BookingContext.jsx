@@ -3,13 +3,18 @@ import React, { createContext, useReducer, useEffect } from 'react';
 export const BookingContext = createContext();
 
 const initialState = {
+  user: null, // Tracks authenticated login session
   selectedService: null,
   customerDetails: null,
-  bookingStatus: 'IDLE', // IDLE, SUBMITTING, SUCCESS, ERROR
+  bookingStatus: 'IDLE', 
 };
 
 function bookingReducer(state, action) {
   switch (action.type) {
+    case 'LOGIN_USER':
+      return { ...state, user: action.payload };
+    case 'LOGOUT_USER':
+      return { ...state, user: null, selectedService: null, customerDetails: null, bookingStatus: 'IDLE' };
     case 'SELECT_SERVICE':
       return { ...state, selectedService: action.payload };
     case 'SAVE_DETAILS':
@@ -17,7 +22,7 @@ function bookingReducer(state, action) {
     case 'SET_STATUS':
       return { ...state, bookingStatus: action.payload };
     case 'RESET_BOOKING':
-      return initialState;
+      return { ...state, selectedService: null, customerDetails: null, bookingStatus: 'IDLE' };
     default:
       return state;
   }
@@ -25,27 +30,27 @@ function bookingReducer(state, action) {
 
 export const BookingProvider = ({ children }) => {
   const [bookingState, dispatch] = useReducer(bookingReducer, initialState, () => {
-    // Rubric requirement: Hydrate state from Browser Storage on initialization
     const localData = sessionStorage.getItem('car_booking_state');
     return localData ? JSON.parse(localData) : initialState;
   });
 
-  // Rubric requirement: Syncing state change into Browser Storage (useEffect)
   useEffect(() => {
     sessionStorage.setItem('car_booking_state', JSON.stringify(bookingState));
   }, [bookingState]);
 
+  const login = (userData) => dispatch({ type: 'LOGIN_USER', payload: userData });
+  const logout = () => {
+    sessionStorage.removeItem('car_booking_state');
+    sessionStorage.removeItem('cached_form_draft');
+    dispatch({ type: 'LOGOUT_USER' });
+  };
   const selectService = (service) => dispatch({ type: 'SELECT_SERVICE', payload: service });
   const updateCustomerDetails = (details) => dispatch({ type: 'SAVE_DETAILS', payload: details });
   const setBookingStatus = (status) => dispatch({ type: 'SET_STATUS', payload: status });
-  const resetBooking = () => {
-    sessionStorage.removeItem('car_booking_state');
-    sessionStorage.removeItem('cached_form_draft');
-    dispatch({ type: 'RESET_BOOKING' });
-  };
+  const resetBooking = () => dispatch({ type: 'RESET_BOOKING' });
 
   return (
-    <BookingContext.Provider value={{ bookingState, selectService, updateCustomerDetails, setBookingStatus, resetBooking }}>
+    <BookingContext.Provider value={{ bookingState, login, logout, selectService, updateCustomerDetails, setBookingStatus, resetBooking }}>
       {children}
     </BookingContext.Provider>
   );
